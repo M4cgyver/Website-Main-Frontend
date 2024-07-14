@@ -1,0 +1,27 @@
+.slideshowContainer {
+    width: 100%;
+    overflow: hidden;
+}
+
+.slideshowSlides {
+    display: flex;
+    flex-direction: row;
+    overflow:hidden;
+
+    transition: margin-left .5s ease; /* Adjust the duration (1s) and timing function (ease) as needed */
+}
+
+.slideshowButtons {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.slideshowButtons a {
+    background-color: rgba(0, 255, 255, 0.329);
+    
+    padding-left: 6px;
+    padding-right: 6px;
+
+    border-radius: 30%;
+}

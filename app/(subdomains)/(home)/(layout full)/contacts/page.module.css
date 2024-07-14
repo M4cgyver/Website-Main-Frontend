@@ -1,0 +1,48 @@
+.contact {
+    position: relative;
+}
+
+.contact h1 {
+    font-size: 28px;
+    line-height: 28px;
+    text-align: center;
+}
+
+.contact ul {
+    display: flex;
+    flex-wrap: wrap;
+    border: none;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    justify-content: space-evenly;
+    text-align: center;
+}
+
+.contact ul li {
+    margin-top: 20px;
+}
+
+.contact ul img {
+    margin: 0 auto;
+    margin-bottom: -20px;
+}
+
+.contact ul a {
+    margin: 0 auto;
+}
+
+.contact h1 {
+    margin-top: -18px;
+    padding-top: 0px;
+}
+
+.contact h3 {
+    margin-top: 0;
+    text-align: center;
+}
+
+.contact .snek {
+    float: right;
+    opacity: .1;
+}

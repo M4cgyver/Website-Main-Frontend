@@ -1,0 +1,5 @@
+/* Default state for unvisited links */
+.aNew::before {
+    content: "[NEW]";
+    color: rgb(76, 76, 247);
+}

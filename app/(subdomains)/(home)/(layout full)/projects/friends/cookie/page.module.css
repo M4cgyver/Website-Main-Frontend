@@ -1,0 +1,33 @@
+@font-face {
+    font-family: 'ToshibaTxL1';
+    src: url('/static/fonts/WebPlus_ToshibaTxL1_8x16.woff') format('woff'),
+        url('/static/fonts/MxPlus_ToshibaTxL1_8x16.ttf') format('truetype'),
+        url('/static/fonts/Bm437_ToshibaTxL1_8x16.FON') format('embedded-opentype');
+}
+  
+
+.cookie { 
+    background-image: url("/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fpaper.803eac24.gif&w=2048&q=100");
+    color:#111111;
+}
+
+.cookie h1 {
+    font-size: 200%;
+    font-family: var(--font-toshibatxl1);
+    overflow: hidden;
+}
+
+.cookie h2{
+    font-size: 150%;
+    font-family: var(--font-toshibatxl1);
+    overflow: hidden;
+    margin-bottom: -8px;
+    text-decoration: underline;
+}
+
+.cookie p{
+    font-family: var(--font-toshibatxl1);
+    font-size: 15px;
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+}

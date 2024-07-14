@@ -1,0 +1,7 @@
+body {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  padding-left:10%;
+  padding-right: 10%;
+}

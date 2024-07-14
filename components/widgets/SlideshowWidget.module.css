@@ -1,0 +1,6 @@
+.buttons {
+    width: 50%;
+    margin: 12px auto;
+    font-family: var(--font-toshibatxl1);
+    color: whitesmoke;
+}
