@@ -59,6 +59,11 @@
   background-color: beige;
 
   margin-bottom: 4vh;
+
+  position: -webkit-sticky; /* For Safari */
+  position: sticky;
+
+  top: 0; /* Stick to the top of the viewport */
 }
 
 .navigation li {

@@ -33,11 +33,13 @@ export default async function ArchivesPage({
     const documentId = hashDJB2(hashSHA3(path));
     const totalViews = getCachedViewCount({ documentId: documentId, uniqueViews: true })();
 
-    const fetchLatestContentArchived = await fetch(`${process.env.ARCHIVES_INTERNAL_API}/search?by=latest&total=16&status=200&type=text/html`, { next: { revalidate: 3600 } });
-    const fetchStatistics = await fetch(`${process.env.ARCHIVES_INTERNAL_API}/statistics`, { next: { revalidate: 3600 } });
+    const fetchLatestContentArchived = await fetch(`${process.env.ARCHIVES_INTERNAL_API}/statistics/latest`, { cache: "no-store" })
+        .catch(() => null);
+    const fetchStatistics = await fetch(`${process.env.ARCHIVES_INTERNAL_API}/statistics`, { cache: 'no-store' })
+        .catch(() => null);
 
-    const fetchLatestContentArchivedJSON = fetchLatestContentArchived.ok ? await fetchLatestContentArchived.json() : null;
-    const fetchStatisticsJSON = fetchStatistics.ok ? await fetchStatistics.json() : null;
+    const fetchLatestContentArchivedJSON = fetchLatestContentArchived?.ok ? await fetchLatestContentArchived.json() : null;
+    const fetchStatisticsJSON = fetchStatistics?.ok ? await fetchStatistics.json() : null;
 
     return <main>
         <div className={`${styles.intro} ${fontToshibaTxL2.variable} ${fontEagleSpCGA_Alt2x2.variable}`}>
@@ -50,7 +52,7 @@ export default async function ArchivesPage({
         <div className={`${styles.warcInfo}`}>
             <div className={`${winStyles.window}`}>
                 <div className={`${winStyles.title}`}>.WARC Backup Latest</div>
-                {fetchLatestContentArchived.ok ? (
+                {fetchLatestContentArchived?.ok ? (
                     <>
                         <div style={{ textAlign: 'center' }}>Here are the latest web-content I have downloaded, list updated every 5 minutes.</div>
 

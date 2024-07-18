@@ -33,6 +33,7 @@ const mimeTypes = [
     "application/x-font-truetype",
     "application/x-httpd-php",
     "application/x-sh",
+    "application/x-shockwave-flash",
     "application/x-tar",
     "application/x-7z-compressed",
     "application/zip",

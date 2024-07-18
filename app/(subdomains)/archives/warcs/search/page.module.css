@@ -56,9 +56,12 @@
     margin-right: 10px;
 }
 
+.search input[type="text"] {
+    flex-grow: 1; /* Allows the inputs to take the remaining space */
+}
+
 .search input[type="text"],
 .search input[type="number"] {
-    flex-grow: 1; /* Allows the inputs to take the remaining space */
     font-size: 16px;
     background-color: rgb(30, 49, 49);
     border: 1px solid lightblue;

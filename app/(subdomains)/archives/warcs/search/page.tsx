@@ -55,7 +55,7 @@ export default async function WarcSearchPage({
     let latestArchivedWebsites: Array<any> | null = null;
 
     try {
-        response = await fetch(`${process.env.ARCHIVES_INTERNAL_API}/search?uri=${uri}&total=${total}&page=${page}&type=${encodeURIComponent(type)}`, { next: { revalidate: 3600 } });
+        response = await fetch(`${process.env.ARCHIVES_INTERNAL_API}/search?uri=${uri}&total=${total}&page=${page}&type=${encodeURIComponent(type)}`, { cache: 'no-store' });
         if (!response.ok) {
             const responseBody = await response.text();
             throw new Error(`HTTP error! status: ${response.status}\n${responseBody}`);

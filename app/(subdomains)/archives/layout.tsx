@@ -50,6 +50,8 @@ export default function RootLayout({
         </ul>
 
         {children}
+
+        <div style={{width: "100%", height:"min(10vw, 10vh)"}} />
       </body>
     </html>
   )
