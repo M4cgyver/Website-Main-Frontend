@@ -105,7 +105,7 @@ export default async function WarcSearchPage({
             <ul>
                 {aggregatedList.map(({ uri, types, datesArchived }) => (
                     <li key={uri} className={styles.result} style={{backgroundColor: getRandomDarkPastelColor()}}>
-                        <b>Url: </b><Link href={`/warcs/viewer?uri=${encodeURIComponent(uri)}`}>{uri}</Link>
+                        <b>Url: </b><Link prefetch={false} href={`/warcs/viewer?uri=${encodeURIComponent(uri)}`}>{uri}</Link>
                         <ul>
                             <li><b>Type: </b>{types.join(', ')}</li>
                             <li><b>Dates Archived: </b>

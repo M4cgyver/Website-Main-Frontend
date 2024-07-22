@@ -30,7 +30,7 @@ export const getProjectsListing = async (): Promise<Metadata[]> => [
         edited: [new Date('2024-06-13')]
     }, {
         title: 'Cookies Petition ',
-        location: "/projects/friends/neo", category: "Friend",
+        location: "/projects/friends/cookie", category: "Friend",
 
         descShort: 'This man was caught lacking with copper. Sign this petition to personally break him out!',
         descLong: 'This man was caught lacking with copper. Sign this petition to personally break him out!',
