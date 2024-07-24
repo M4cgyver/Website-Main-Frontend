@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { format } from "date-fns";
 import styles from "./page.module.css";
+import Overlay from "@/components/overlay";
 
 type SearchParams = {
     [key: string]: string | undefined;
@@ -49,7 +50,7 @@ export default async function WarcSearchPage({
     const uri = encodeURIComponent(searchParams.uri ?? "");
     const total = parseInt(searchParams.total ?? "32");
     const page = parseInt(searchParams.page ?? "1");
-    const type = searchParams.type ?? "";    
+    const type = searchParams.type ?? "";
 
     let response: Response | null = null;
     let latestArchivedWebsites: Array<any> | null = null;
@@ -63,11 +64,10 @@ export default async function WarcSearchPage({
         latestArchivedWebsites = await response.json();
     } catch (error: any) {
         return (
-            <div className={styles.error} style={{backgroundColor: getRandomDarkPastelColor()}}>
-                Failed to load archived websites. Please try again later.
-                <br />
-                <pre>{error.message}</pre>
-                <pre>{(response && response.ok) ? await response.text() : ''}</pre>
+            <div style={{ position: 'relative', width: "100%", aspectRatio: 1920 / 500, padding: 16 }}>
+                <Overlay button={false} backgroundColor={getRandomDarkPastelColor()}>
+                    <h3 style={{ width: "75%", textAlign: 'center' }}>Looks like there was an issue requesting the archive statistics! My mining rig may be offline.</h3>
+                </Overlay>
             </div>
         );
     }
@@ -104,7 +104,7 @@ export default async function WarcSearchPage({
         <div className={styles.results}>
             <ul>
                 {aggregatedList.map(({ uri, types, datesArchived }) => (
-                    <li key={uri} className={styles.result} style={{backgroundColor: getRandomDarkPastelColor()}}>
+                    <li key={uri} className={styles.result} style={{ backgroundColor: getRandomDarkPastelColor() }}>
                         <b>Url: </b><Link prefetch={false} href={`/warcs/viewer?uri=${encodeURIComponent(uri)}`}>{uri}</Link>
                         <ul>
                             <li><b>Type: </b>{types.join(', ')}</li>
