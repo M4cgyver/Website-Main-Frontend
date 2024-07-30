@@ -18,6 +18,7 @@ if (subdomainsString) {
 } */
 
 const subdomains = JSON.parse(process.env.SUBDOMAINS ?? "{}");
+const ssrroutes = JSON.parse(process.env.SSRROUTES ?? "{}");
 
 // Function to get a valid subdomain from the host
 const getValidSubdomain = (host?: string | null): string | null => {
@@ -28,13 +29,45 @@ const getValidSubdomain = (host?: string | null): string | null => {
     if (host && host.includes('.')) {
         // Split the host to extract the subdomain candidate
         const candidate = host.split('.')[0];
-        
+
         // Return the candidate if it's valid (not 'localhost')
         if (candidate && !candidate.includes('localhost')) {
             return candidate;
         }
     }
     return null;
+};
+
+// Function to get a valid ssr route
+const getValidSSRRoute = (path: string): string | null => {
+    // Trim trailing slashes for consistency
+    const trimmedPath = path.replace(/\/$/, "");
+
+    // Initialize variables for tracking the best match
+    let bestMatch: string | null = null;
+    let longestMatchLength = 0;
+
+    // Iterate over the SSR routes
+    for (const [nonSSR, ssr] of Object.entries(ssrroutes)) {
+        // Trim trailing slashes from nonSSR for consistency
+        const trimmedNonSSR = nonSSR.replace(/\/$/, "");
+
+        // Check if the path starts with the non-SSR route and verify it's a complete segment match
+        if (
+            trimmedPath.startsWith(trimmedNonSSR) &&
+            (trimmedPath.length === trimmedNonSSR.length || trimmedPath[trimmedNonSSR.length] === '/')
+        ) {
+            const currentMatchLength = trimmedNonSSR.length;
+            // Update the best match if the current match is longer
+            if (currentMatchLength > longestMatchLength) {
+                longestMatchLength = currentMatchLength;
+                bestMatch = (ssr) ? (ssr as string) : null;
+            }
+        }
+    }
+
+    // Return the best match or null if no match is found
+    return bestMatch;
 };
 
 export function middleware(request: NextRequest) {
@@ -50,13 +83,13 @@ export function middleware(request: NextRequest) {
 
     for (const subdomain in subdomains) {
         const path = subdomains[subdomain];
-        
+
         if (request.nextUrl.pathname.startsWith(path)) {
             const protocol = request.nextUrl.protocol.startsWith('https') ? 'https' : 'http';
             const newPath = request.nextUrl.pathname.substring(path.length); // Adjust the new path
-    
+
             const newurl = `${protocol}://${subdomain}.${host}${newPath}`;
-    
+
             console.log(`Redirecting ${request.nextUrl.pathname} to ${newurl}`);
             return NextResponse.redirect(newurl);
         }
@@ -70,10 +103,22 @@ export function middleware(request: NextRequest) {
         url.pathname = `${subdomains[subdomain]}${url.pathname}`;
     }
 
+    /// Check the ssr cookie and check the paths
+    // needs to be after subdomian
+    if (!request.cookies.get("noscript") || request.cookies.get("noscript")?.value !== "true") {
+        const ssrroute = getValidSSRRoute(url.pathname);
+
+        if(ssrroute) {
+            console.log(`>>> SSR: ${url.pathname} to ${ssrroute}`)
+            url.pathname = ssrroute;
+        }
+    }
+
+    /// Finish the rewrite
     const response = NextResponse.rewrite(url);
 
     /// Compute user ID and document ID using hashing algorithms
-    const userid = hashDJB2(hashSHA3(request.ip + (process.env.HASH_IP_DEFAULT_SALT ?? "" ) ) + "salt 2");
+    const userid = hashDJB2(hashSHA3(request.ip + (process.env.HASH_IP_DEFAULT_SALT ?? "")) + "salt 2");
     const documentid = hashDJB2(hashSHA3(request.nextUrl.basePath));
 
     // Set cookies and headers in the response

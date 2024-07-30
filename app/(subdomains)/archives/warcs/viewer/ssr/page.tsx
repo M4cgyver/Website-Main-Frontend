@@ -7,10 +7,11 @@ export default function WarcViewerPage({
   searchParams: { [key: string]: string | undefined };
 }) {
   const uri = searchParams.uri ?? ''; // Get the 'uri' parameter from searchParams
-  const apiViewUri = `${process.env.ARCHIVES_EXTERNAL_API}/view?uri=${uri}&redirect=true`;
+  const apiViewUri = `${process.env.NEXT_PUBLIC_ARCHIVES_EXTERNAL_API}/view?uri=${uri}&redirect=true`;
 
   return (
     <main >
+      <span>ssr</span>
       <div className={styles.content}>
         <div className={styles.title} title={`Api URL: ${apiViewUri}`}>Viewing <Link href={uri} target="_blank">{uri}</Link></div>
         <span style={{ backgroundColor: "white", width: "100%", height: "100%" }}>

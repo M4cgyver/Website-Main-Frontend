@@ -9,6 +9,7 @@ import { fontToshibaTxL1 } from '@/libs/fonts';
 import websiteIcon from "@/public/favicon.ico"
 
 import winStyles from "@/libs/styles/windows.archives.module.css"
+import { NoScriptCookie } from './libs';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -16,16 +17,16 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://archives.m4cgyver.net'),
 
   alternates: {
-      canonical: '/',
-      languages: {
-          'en-US': '/en-US',
-      },
+    canonical: '/',
+    languages: {
+      'en-US': '/en-US',
+    },
   },
 
   openGraph: {
-      images: websiteIcon.src,
-      locale: 'en-US',
-      type: 'website',
+    images: websiteIcon.src,
+    locale: 'en-US',
+    type: 'website',
   },
 }
 
@@ -51,7 +52,10 @@ export default function RootLayout({
 
         {children}
 
-        <div style={{width: "100%", height:"min(10vw, 10vh)"}} />
+        <div style={{ width: "100%", height: "min(10vw, 10vh)" }} />
+
+        <NoScriptCookie />
+
       </body>
     </html>
   )

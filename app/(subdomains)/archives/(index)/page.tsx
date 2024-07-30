@@ -1,4 +1,4 @@
-import { fontEagleSpCGA_Alt2x2, fontToshibaTxL2 } from "@/libs/fonts";
+import { fontEagleSpCGA_Alt2x2, fontHP100LX6x8, fontTerminal, fontToshibaTxL1, fontToshibaTxL2, fontVerite9x14 } from "@/libs/fonts";
 
 import styles from "./page.module.css"
 import winStyles from "@/libs/styles/windows.archives.module.css"
@@ -48,27 +48,30 @@ export default async function ArchivesPage({
         <div className={`${styles.warcInfo}`}>
             <div className={`${winStyles.window}`}>
                 <div className={`${winStyles.title}`}>.WARC Backup Latest</div>
-                <div style={{ textAlign: 'center' }}>Here are the latest web-content I have downloaded.</div>
+                <div className={fontToshibaTxL2.className}>
+                    <div className={fontToshibaTxL1.className} style={{ textAlign: 'center', width: '87.5%', margin: "8px auto" }}>Here are the latest web-content I have downloaded, click the link!</div>
 
-                <div style={{ height: 16 }} />
+                    <div style={{ marginTop: 16 }} />
 
-                <div className={styles.warcUris} style={{ display: "flex", width: "100%", padding: 0 }}>
+                    <div className={styles.warcUris} style={{ display: "flex", width: "100%", padding: 0 }}>
 
-                    <StatisticsLatestArchived />
+                        <StatisticsLatestArchived />
 
+                    </div>
                 </div>
-
             </div>
 
             <div className={`${winStyles.window}`}>
                 <div className={`${winStyles.title}`}>.WARC Backup Statistics</div>
+                <div className={fontToshibaTxL2.className}>
+                    <div style={{ display: "flex", flexDirection: "column", height: "90%" }}>
+                       
+                        <div className={fontToshibaTxL1.className} style={{ textAlign: 'center', width: '87.5%', margin: "8px auto" }}>Simple debug statistics on how much content I have backed up / free space.</div>
 
-                <div style={{ display: "flex", flexDirection: "column", height: "90%" }}>
-                    <div style={{ textAlign: 'center' }}>Simple debug statistics on how much content I have backed up / free space.</div>
+                        <div style={{ marginTop: 16 }} />
 
-                    <div style={{ height: 16 }} />
-
-                    <StatisticsLatestCount />
+                        <StatisticsLatestCount />
+                    </div>
                 </div>
             </div>
 

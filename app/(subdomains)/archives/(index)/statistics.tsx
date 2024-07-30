@@ -44,7 +44,7 @@ export const StatisticsLatestCount = () => {
                     <div><b>Total Views:</b> {totalViews} Views </div>
                 </div>
 
-                <div style={{ display: "flex", width: "100%", padding: 8, gap: '24px', height: 500, overflowY: "scroll"}}>
+                <div style={{ display: "flex", width: "100%", padding: 8, gap: '24px', height: 450, overflowY: "scroll"}}>
                     {/* URI Column */}
                     <div style={{ display: "flex", flexDirection: "column", flexGrow: 1, minWidth: 0 }}>
                         <b style={{ width: "100%", textAlign: "center" }}>File</b>
