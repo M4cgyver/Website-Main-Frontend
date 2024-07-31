@@ -12,5 +12,5 @@ export const NoScriptCookie = () => {
         setNoscript(getCookie('noscript') === 'true');
     }, []);
 
-    return <span>{`noscript: ${noscript == null ? 'null' : (noscript == true ? 'true' : 'false')}`}</span>;
+    return <span style={{display: 'none'}}> {`noscript: ${noscript == null ? 'null' : (noscript == true ? 'true' : 'false')}`}</span>;
 };

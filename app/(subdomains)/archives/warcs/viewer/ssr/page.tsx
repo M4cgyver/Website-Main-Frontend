@@ -11,7 +11,6 @@ export default function WarcViewerPage({
 
   return (
     <main >
-      <span>ssr</span>
       <div className={styles.content}>
         <div className={styles.title} title={`Api URL: ${apiViewUri}`}>Viewing <Link href={uri} target="_blank">{uri}</Link></div>
         <span style={{ backgroundColor: "white", width: "100%", height: "100%" }}>

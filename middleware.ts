@@ -105,10 +105,15 @@ export function middleware(request: NextRequest) {
 
     /// Check the ssr cookie and check the paths
     // needs to be after subdomian
-    if (!request.cookies.get("noscript") || request.cookies.get("noscript")?.value !== "true") {
-        const ssrroute = getValidSSRRoute(url.pathname);
+    const cookiessr = request.cookies.get("noscript")?.value;
 
-        if(ssrroute) {
+    console.log(cookiessr);
+
+    const ssrroute = getValidSSRRoute(url.pathname);
+    console.log(`>>> SSR enabled ${url.pathname} ${ssrroute}`)
+
+    if (ssrroute && cookiessr != 'true') {
+        if (cookiessr != 'true') {
             console.log(`>>> SSR: ${url.pathname} to ${ssrroute}`)
             url.pathname = ssrroute;
         }
@@ -126,6 +131,10 @@ export function middleware(request: NextRequest) {
     response.headers.set('x-url', request.url);
     response.headers.set('x-path', request.nextUrl.basePath);
     response.headers.set('x-id', documentid.toString());
+
+    if (ssrroute && cookiessr != 'true') {
+        response.cookies.set('noscript', 'false');
+    }
 
     return response;
 }

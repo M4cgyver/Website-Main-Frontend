@@ -1,7 +1,6 @@
 "use client";
 
 import { ReactNode, useRef } from "react";
-import { SearchForm } from "../search/search";
 import { WarcOfflineContext } from "./context";
 import { WarcRecord } from "./libs";
 import { mWarcParse, mWarcParseResponseContent, mWarcParseResponses } from "./mwarc";
