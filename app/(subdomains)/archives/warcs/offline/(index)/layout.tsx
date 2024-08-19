@@ -7,7 +7,7 @@ import { mWarcParse, mWarcParseResponseContent, mWarcParseResponses } from "./mw
 import { parseFiles, getRecord, displayRecord, hookOnMessageEventListener} from "./actions"
 import { Metadata } from "next";
 
-export default function WarcOfflineLayout({
+export default function WarcOfflineOldLayout({
     children,
 }: {
     children: ReactNode

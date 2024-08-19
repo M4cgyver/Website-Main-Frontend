@@ -14,7 +14,7 @@ export default function WarcViewerPage() {
       <div className={styles.content}>
         <div className={styles.title} title={`Api URL: ${apiViewUri}`}>Viewing <Link href={uri} target="_blank">{uri}</Link></div>
         <span style={{ backgroundColor: "white", width: "100%", height: "100%" }}>
-          <iframe style={{ width: "100%", aspectRatio: 2, resize: 'vertical' }} src={apiViewUri} />
+          <iframe style={{ width: "100%", height:"85vh", resize: 'vertical' }} src={apiViewUri} />
         </span>
       </div>
     </main>

@@ -1,22 +1,19 @@
 "use client";
 
-import { FormUpload } from "./formUpload";
-import { WarcRecordIframe } from "./iframe";
-
-import { RecordsCounter } from "./recordsCounter";
-import { RecordsListing } from "./recordsListing";
-
 import styles from "./page.module.css";
 import winStyles from "@/libs/styles/windows.archives.module.css"
-import { Metadata } from "next";
+import { RecordsCounter } from "./recordsCounter";
+import { WarcRecordIframe } from "./iframe";
+import { FormUpload } from "./formUpload"; 
+import { WarcOfflineList } from "./list";
 
-export default function WarcOfflinePage() {
+export default function WarcOfflineBrokenPage() {
+    return <main>
 
-    return (<main>
-        <div className={`${winStyles.window} ${styles.window}`}>
+        <div className={`${winStyles.window} ${styles.window}`} style={{marginTop: "1vh"}}>
             <div className={winStyles.title}>
                 Local .WARC Viewer
-                <RecordsCounter />
+                <span style={{ float: "right" }}><RecordsCounter /></span>
             </div>
             <div className={styles.flexthis}>
                 <span style={{ backgroundColor: "white", width: "100%", height: "100%" }}>
@@ -32,9 +29,8 @@ export default function WarcOfflinePage() {
 
         <div className={`${winStyles.window} ${styles.window} ${styles.records}`}>
             <div className={winStyles.title}>Records</div>
-            <RecordsListing />
+            <WarcOfflineList />
         </div>
 
     </main>
-    );
 }

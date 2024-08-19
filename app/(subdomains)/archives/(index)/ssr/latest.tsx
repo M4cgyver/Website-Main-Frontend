@@ -4,12 +4,13 @@ import styles from "./page.module.css";
 import Loading from "@/components/loading";
 import Overlay from "@/components/overlay";
 
-// Define the type for a single site entry
+// Define the type for a single site entry based on new data structure
 interface SiteEntry {
-    uri: string;
-    date: string;
+    uri_r: string;  // URI field from the new response
+    date_added_r: string;  // Date field from the new response
 }
 
+// Define the component
 export const StatisticsLatestArchived = async () => {
     try {
         // Fetch data from the server
@@ -36,7 +37,7 @@ export const StatisticsLatestArchived = async () => {
                     <b style={{ width: "100%", textAlign: "center" }}>URI</b>
                     {sites.map((entry: SiteEntry, index: number) => (
                         <Link
-                            href={`/warcs/viewer?uri=${encodeURIComponent(entry.uri)}`}
+                            href={`/warcs/viewer?uri=${encodeURIComponent(entry.uri_r)}`}
                             prefetch={false}
                             key={index}
                             style={{
@@ -47,7 +48,7 @@ export const StatisticsLatestArchived = async () => {
                                 textOverflow: "ellipsis",
                             }}
                         >
-                            {entry.uri}
+                            {entry.uri_r}
                         </Link>
                     ))}
                 </div>
@@ -66,7 +67,7 @@ export const StatisticsLatestArchived = async () => {
                             key={index}
                             style={{ textWrap: "nowrap", whiteSpace: "nowrap" }}
                         >
-                            {new Date(entry.date).toLocaleDateString("en-US", {
+                            {new Date(entry.date_added_r).toLocaleDateString("en-US", {
                                 month: "2-digit",
                                 day: "2-digit",
                                 year: "2-digit",

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import styles from "./page.module.css";
 import Overlay from "@/components/overlay";
 import { getRandomDarkPastelColor } from "./actions";
@@ -7,26 +7,6 @@ import { getRandomDarkPastelColor } from "./actions";
 type SearchParams = {
     [key: string]: string | undefined;
 };
-
-type ArchivedWebsiteRecord = {
-    uri: string;
-    status: number;
-    location: string | null;
-    type: string;
-    filename: string;
-    offset_header: string;
-    offset_content: string;
-    content_length: string;
-    last_modified: string;
-    date: string;
-    transfer_encoding: string;
-};
-
-type AggregatedInfo = {
-    types: Set<string>;
-    datesArchived: Set<string>;
-};
-
 
 export default async function WarcSearchPage({
     searchParams,
@@ -42,7 +22,9 @@ export default async function WarcSearchPage({
     let latestArchivedWebsites: Array<any> | null = null;
 
     try {
-        response = await fetch(`${process.env.ARCHIVES_INTERNAL_API}/search?uri=${uri}&total=${total}&page=${page}&type=${encodeURIComponent(type)}`, { cache: 'no-store' });
+        const apiendpoint = `${process.env.ARCHIVES_INTERNAL_API}/search?uri=${uri}&total=${total}&page=${page}&type=${encodeURIComponent(type)}`;
+        //console.log("url ssr ", apiendpoint)
+        response = await fetch(apiendpoint, { cache: 'no-store' });
         if (!response.ok) {
             const responseBody = await response.text();
             throw new Error(`HTTP error! status: ${response.status}\n${responseBody}`);
@@ -58,7 +40,7 @@ export default async function WarcSearchPage({
         );
     }
 
-    if (!latestArchivedWebsites /*|| !Array.isArray(latestArchivedWebsites.records) */) {
+    if (!latestArchivedWebsites) {
         return (
             <div className={styles.error}>
                 Invalid data format received. Please contact support.
@@ -67,12 +49,12 @@ export default async function WarcSearchPage({
     }
 
     // Aggregate data by URI
-    const aggregatedArchivedWebsites = latestArchivedWebsites.reduce((acc: { [key: string]: AggregatedInfo }, record: ArchivedWebsiteRecord) => {
-        if (!acc[record.uri]) {
-            acc[record.uri] = { types: new Set(), datesArchived: new Set() };
+    const aggregatedArchivedWebsites = latestArchivedWebsites.reduce((acc: { [key: string]: any }, record: any) => {
+        if (!acc[record.uri_r]) {
+            acc[record.uri_r] = { types: new Set(), datesArchived: new Set() };
         }
-        acc[record.uri].types.add(record.type);
-        acc[record.uri].datesArchived.add(record.date);
+        acc[record.uri_r].types.add(record.content_type_r);
+        acc[record.uri_r].datesArchived.add(record.meta_r.date);
 
         return acc;
     }, {});
@@ -96,9 +78,14 @@ export default async function WarcSearchPage({
                             <li><b>Type: </b>{types.join(', ')}</li>
                             <li><b>Dates Archived: </b>
                                 <ul>
-                                    {datesArchived.map((date: any, index) => (
-                                        <li key={index}>{format(new Date(date), "MMMM do, yyyy '(Coordinated Universal Time)'")}</li>
-                                    ))}
+                                    {datesArchived.map((date: any, index) => {
+                                        const parsedDate = new Date(date);
+                                        return (
+                                            <li key={index}>
+                                                {isValid(parsedDate) ? format(parsedDate, "MMMM do, yyyy '(Coordinated Universal Time)'") : 'Invalid date'}
+                                            </li>
+                                        );
+                                    })}
                                 </ul>
                             </li>
                         </ul>

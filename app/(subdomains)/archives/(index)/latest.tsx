@@ -32,8 +32,8 @@ export const StatisticsLatestArchived = () => {
                 <div style={{ display: "flex", flexDirection: "column", flexGrow: 1, minWidth: 0 }}>
                     <b style={{ width: "100%", textAlign: "center" }}>URI</b>
                     {sites?.map((entry: any, index: number) => (
-                        <Link href={`/warcs/viewer?uri=${encodeURIComponent(entry.uri)}`} prefetch={false} key={index} style={{ width: "100%", overflow: "hidden", textWrap: "nowrap", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
-                            {entry.uri}
+                        <Link href={`/warcs/viewer?uri=${encodeURIComponent(entry.uri_r)}`} prefetch={false} key={index} style={{ width: "100%", overflow: "hidden", textWrap: "nowrap", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                            {entry.uri_r}
                         </Link>
                     ))}
                 </div>
@@ -44,7 +44,7 @@ export const StatisticsLatestArchived = () => {
                     <b style={{ width: "100%", textAlign: "center" }}>Date</b>
                     {sites?.map((entry: any, index: number) => (
                         <span key={index} style={{ textWrap: "nowrap", whiteSpace: "nowrap" }}>
-                            {new Date(entry.date).toLocaleDateString('en-US', {
+                            {new Date(entry.date_added_r).toLocaleDateString('en-US', {
                                 month: '2-digit',
                                 day: '2-digit',
                                 year: '2-digit',
