@@ -1,4 +1,0 @@
-1c1
-< declare module 'supersphincs' {
----
-> declare module 'supersphincs/dist/rsa-variant.js' {
