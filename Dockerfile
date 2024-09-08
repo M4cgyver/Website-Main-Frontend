@@ -1,22 +1,34 @@
-# Use the official Bun image
-# See all versions at https://hub.docker.com/r/oven/bun/tags
-FROM oven/bun:alpine AS base
-WORKDIR /usr/src/app
+# Use an official Node.js image based on Debian as a base
+FROM node:current-slim
 
-# Install dependencies needed for sharp
-RUN apk add --no-cache \
-  build-base \
-  vips-dev \
-  python3 \
-  py3-pip \
-  bash \
-  yarn
+# Set environment variable for pnpm version
+ARG pnpm_version=latest
 
-# Install dependencies into temp directory to cache them and speed up future builds
-FROM base AS install
-RUN mkdir -p /temp/dev
-COPY package.json bun.lockb /temp/dev/
-RUN cd /temp/dev && bun install
+# Update and install dependencies for sharp, VLC, and other utilities
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash \
+    g++ \
+    make \
+    python3 \
+    libc6-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libvips-dev \
+    curl \
+    git \
+    openssh-client \
+    vlc \
+    ffmpeg \
+    imagemagick \
+    wget \
+    unzip && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install sharp
-RUN bun install sharp
+# Install pnpm globally
+RUN npm install -g pnpm@$pnpm_version
+
+# Install sharp using pnpm
+RUN pnpm install --save node-addon-api node-gyp sharp next@canary
+
+# Set the working directory
+WORKDIR /app

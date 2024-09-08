@@ -109,6 +109,7 @@ export function middleware(request: NextRequest) {
 
     console.log(cookiessr);
 
+    /*
     const ssrroute = getValidSSRRoute(url.pathname);
     console.log(`>>> SSR enabled ${url.pathname} ${ssrroute}`)
 
@@ -118,6 +119,7 @@ export function middleware(request: NextRequest) {
             url.pathname = ssrroute;
         }
     }
+    */
 
     /// Finish the rewrite
     const response = NextResponse.rewrite(url);
@@ -132,9 +134,11 @@ export function middleware(request: NextRequest) {
     response.headers.set('x-path', request.nextUrl.basePath);
     response.headers.set('x-id', documentid.toString());
 
+    /*
     if (ssrroute && cookiessr != 'true') {
         response.cookies.set('noscript', 'false');
     }
+    */
 
     return response;
 }

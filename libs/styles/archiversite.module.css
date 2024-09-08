@@ -3,6 +3,8 @@
   flex-direction: row;
   gap: 10px;
 
+  z-index: 4;
+
   background: linear-gradient(to right, rgb(241, 169, 142), rgba(0, 0, 0, 0)),
     url(https://grainy-gradients.vercel.app/noise.svg);
 }
@@ -64,6 +66,8 @@
   position: sticky;
 
   top: 0; /* Stick to the top of the viewport */
+
+  z-index: 16;
 }
 
 .navigation li {
@@ -115,6 +119,8 @@
   /* Ensure each sub-item is a block for styling */
 
   width: 150px;
+
+  z-index: 4;
 
   background-color: cornsilk;
 }

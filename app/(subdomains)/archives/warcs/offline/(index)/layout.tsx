@@ -1,22 +1,34 @@
-"use client";
-
-import { ReactNode, useRef } from "react";
-import { WarcOfflineContext } from "./context";
-import { WarcRecord } from "./libs";
-import { mWarcParse, mWarcParseResponseContent, mWarcParseResponses } from "./mwarc";
-import { parseFiles, getRecord, displayRecord, hookOnMessageEventListener} from "./actions"
 import { Metadata } from "next";
+import { hashDJB2, hashSHA3 } from "@/libs/algorithm";
 
-export default function WarcOfflineOldLayout({
-    children,
+export const metadata: Metadata = {
+  title: 'M4cgyvers Offline .WARC viewer ',
+  description: 'THiss is an offline .warc viewer I made in NextJs. Its completly client sided so you dont upload anything to me improving in speed, privacy, and security!',
+
+  creator: 'M4cgyver',
+  publisher: 'M4cgyver',
+
+  referrer: 'origin-when-cross-origin',
+
+  openGraph: {
+    title: 'M4cgyvers Offline .WARC viewer ',
+    description: 'THiss is an offline .warc viewer I made in NextJs. Its completly client sided so you dont upload anything to me improving in speed, privacy, and security!',
+    url: 'https://archives.m4cgyver.com/warcs/offline',
+    locale: 'en-US',
+    type: 'website',
+
+  }
+};
+
+const path = "/archives/warcs/offline";
+const documentId = hashDJB2(hashSHA3(path));
+
+export default async function ArchivesOfflineLayout({
+  children,
 }: {
-    children: ReactNode
+  children: React.ReactNode
 }) {
-    const files: File[] = [];
-    const records: WarcRecord[] = [];
-    const iframeRef = useRef<HTMLIFrameElement | null>(null);
-
-    return <WarcOfflineContext.Provider value={{ files, records, iframeRef, parseFiles, getRecord, displayRecord }}>
-        {children}
-    </WarcOfflineContext.Provider>
+  return <>
+    {children}
+  </>
 }

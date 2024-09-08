@@ -64,86 +64,17 @@ export const mWarcParseHeader = (s: string): mWarcHeaderMap => {
 
     return { ...headers, ...httpHeader };
 };
-
-export const mWarcParse = (
-    read: mWarcReadFunction,
-    options?: mWarcParseWarcOptions
-): mWarcAsyncItter => {
-    const skipContent = options?.skipContent || false;
-    const readBufferSize = options?.readBufferSize || 512n + 256n;
-    const signal = options?.signal;
-
-    let backbuffer: string = "";
-    let offset = 0n;
-    let done = false;
-
-    return {
-        [Symbol.asyncIterator]() {
-            return {
-                async next(): Promise<IteratorResult<[mWarcHeaderMap, Buffer?]>> {
-                    if (done) {
-                        return { done: true, value: undefined };
-                    }
-
-                    console.log(signal?.aborted);
-
-                    if (signal?.aborted) {
-                        done = true;
-                        return { done: true, value: undefined };
-                    }
-
-                    let content: Buffer | undefined = undefined;
-                    let bufferToParse: string = backbuffer;
-                    let bufferChunks: Array<string> = [];
-
-                    try {
-                        while (bufferChunks.length < 2) {
-                            const newChunks = bufferToParse.split("\r\n\r\n");
-                            bufferChunks = (newChunks != null) ? newChunks : bufferChunks;
-
-                            if (bufferChunks.length < 2) {
-                                const possiblePromise = await read(offset, readBufferSize);
-                                bufferToParse += possiblePromise.toString();
-
-                                offset += readBufferSize;
-                            }
-                        }
-
-                        const header: mWarcHeaderMap = mWarcParseHeader(bufferChunks[0]);
-
-                        const contentLength = header['content-length'] ? BigInt(header['content-length']) : 0n;
-
-                        const remainingBytes = contentLength - BigInt(bufferToParse.length - bufferChunks[0].length - 4);
-                        content = skipContent ? undefined :
-                            Buffer.from(bufferToParse.slice(bufferChunks[0].length + 4, bufferChunks[0].length + 4 + Number(contentLength)) +
-                                ((remainingBytes > 0n) ? (await read(offset, remainingBytes)).toString() : ""));
-                        offset += remainingBytes > 0n ? remainingBytes : 0n;
-                        backbuffer = remainingBytes < 0n ? bufferToParse.slice(bufferToParse.length + Number(remainingBytes) + 4) : "";
-
-                        return {
-                            done: false,
-                            value: [{ ...header, offset: offset }, content],
-                        };
-                    } catch (err) {
-                        if (err instanceof RangeError) {
-                            done = true;
-                            return { done: true, value: undefined };
-                        } else {
-                            throw err;
-                        }
-                    }
-                }
-            };
-        }
-    };
-};
-
 export const mWarcParseResponses = (
     read: mWarcReadFunction,
-    options?: { skipContent?: boolean, readBufferSize?: bigint }
+    options?: { 
+        skipContent?: boolean; 
+        readBufferSize?: bigint; 
+        signal?: AbortSignal;
+    }
 ): mWarcResponsesAsyncItter => {
     const skipContent = options?.skipContent || false;
     const readBufferSize = options?.readBufferSize || 512n + 256n;
+    const abortSignal = options?.signal;
 
     let backbuffer: string = "";
     let offset = 0n;
@@ -168,6 +99,7 @@ export const mWarcParseResponses = (
 
                     try {
                         do {
+                            abortSignal?.throwIfAborted(); // Check for abort signal
                             let bufferToParse: string = backbuffer;
                             let bufferChunks: Array<string> = [];
                             metadata.recordWarcOffset = offset - BigInt(bufferToParse.length);
@@ -177,9 +109,16 @@ export const mWarcParseResponses = (
                                 bufferChunks = newChunks.length > 1 ? newChunks : bufferChunks;
 
                                 if (bufferChunks.length < 2) {
+                                    abortSignal?.throwIfAborted(); // Check for abort signal before reading
                                     const possiblePromise = await read(offset, readBufferSize);
-                                    bufferToParse += possiblePromise.toString();
 
+                                    // Handle cases where read returns 0 bytes, undefined, or null
+                                    if (!possiblePromise || possiblePromise.length === 0) {
+                                        done = true;
+                                        return { done: true, value: undefined as any };
+                                    }
+
+                                    bufferToParse += possiblePromise.toString();
                                     offset += readBufferSize;
                                 }
                             }
@@ -199,9 +138,16 @@ export const mWarcParseResponses = (
                                     bufferChunks = newChunks.length > 2 ? newChunks : bufferChunks;
 
                                     if (bufferChunks.length < 3) {
+                                        abortSignal?.throwIfAborted(); // Check for abort signal before reading
                                         const possiblePromise = await read(offset, readBufferSize);
-                                        bufferToParse += possiblePromise.toString();
 
+                                        // Handle cases where read returns 0 bytes, undefined, or null
+                                        if (!possiblePromise || possiblePromise.length === 0) {
+                                            done = true;
+                                            return { done: true, value: undefined as any };
+                                        }
+
+                                        bufferToParse += possiblePromise.toString();
                                         offset += readBufferSize;
                                     }
                                 }
@@ -211,8 +157,17 @@ export const mWarcParseResponses = (
 
                                 const remainingBytes = httpContentLength - BigInt(bufferToParse.length - bufferChunks[0].length - bufferChunks[1].length - 8);
                                 content = skipContent ? undefined :
-                                    Buffer.from(bufferToParse.slice(bufferChunks[0].length + bufferChunks[1].length + 8, bufferChunks[0].length + bufferChunks[1].length + 8 + Number(httpContentLength)) +
-                                        ((remainingBytes > 0n) ? (await read(offset, remainingBytes)).toString() : ""));
+                                    Buffer.from(
+                                        bufferToParse.slice(
+                                            bufferChunks[0].length + bufferChunks[1].length + 8, 
+                                            bufferChunks[0].length + bufferChunks[1].length + 8 + Number(httpContentLength)
+                                        ) +
+                                        ((remainingBytes > 0n) ? 
+                                            (await read(offset, remainingBytes)).toString() : 
+                                            ""
+                                        )
+                                    );
+
                                 offset += remainingBytes > 0n ? remainingBytes : 0n;
                                 backbuffer = remainingBytes < 0n ? bufferToParse.slice(bufferToParse.length + Number(remainingBytes) + 4) : "";
 
@@ -233,6 +188,10 @@ export const mWarcParseResponses = (
                             value: [header, http, metadata, content],
                         };
                     } catch (err) {
+                        if (abortSignal?.aborted) {
+                            done = true;
+                            return { done: true, value: undefined as any };
+                        }
                         if (err instanceof RangeError) {
                             done = true;
                             return { done: true, value: undefined as any };
@@ -245,6 +204,7 @@ export const mWarcParseResponses = (
         }
     };
 };
+
 
 export const mWarcParseResponseContent = (
     content: Buffer,
