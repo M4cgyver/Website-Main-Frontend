@@ -1,0 +1,7 @@
+.viewablelink:hover::after {
+    content: "(Click to view)";
+    color: inherit; /* Matches the text color of the link */
+    font-size: smaller; /* Optional: Adjust the size of the appended text */
+    padding-left: 12px;
+    text-decoration: none;
+}

@@ -9,7 +9,7 @@ type SearchParams = {
   [key: string]: string | undefined;
 };
 
-export default async function WarcSearchPage({
+export default function WarcSearchPage({
   searchParams,
 }: {
   searchParams: SearchParams;

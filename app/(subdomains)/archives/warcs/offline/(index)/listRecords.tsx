@@ -1,5 +1,6 @@
 'use client'
 
+import styles from "./listRecords.module.css"
 import { useState } from 'react'
 import { ChevronRight, ChevronDown } from 'lucide-react'
 import { formatFileSize, getParsedRecord } from "./cactions"
@@ -55,7 +56,7 @@ function WarcRecordsListEntry({ node, depth }: { node: WarcTreeNode; depth: numb
                     </span>
 
                     {(record) ?
-                        <a className="truncate text-sm underline cursor-pointer" title={node.key} onClick={handleLinkClick}>
+                        <a className={`truncate text-sm underline cursor-pointer ${styles.viewablelink}`} title={node.key} onClick={handleLinkClick}>
                             {node.key}
                         </a> :
                         <span className="truncate text-sm" title={node.key}>
