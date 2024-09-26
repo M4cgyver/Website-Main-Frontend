@@ -10,6 +10,7 @@ import { Suspense } from "react";
 import { StatisticsLatestArchived } from "./latest";
 import Overlay from "@/components/overlay";
 import { StatisticsLatestCount } from "./statistics";
+import SearchForm from "../../warcs/search/(current)/search";
 
 export const metadata: Metadata = {
     title: 'M4cgyvers Online Archives ',
@@ -53,7 +54,7 @@ export default function ArchivesPage({
                 <div className={`${winStyles.title}`}>.WARC Backup Latest</div>
                 <div className={fontToshibaTxL2.className}>
                     <div className={fontToshibaTxL1.className} style={{ textAlign: 'center', width: '87.5%', margin: "8px auto" }}>Here are the latest web-content I have downloaded, click the link to view!</div>
-                    <div className={styles.warcUris} style={{ display: "flex", width: "100%", padding: 0 }}>
+                    <div className={styles.warcUris} style={{ display: "flex", width: "100%", padding: 0, flexDirection: "column" }}>
 
                         <Suspense fallback={<div style={{ position: "relative", width: "100%", aspectRatio: "3000/1080" }}>
                             <Overlay button={false} backgroundColor="#00000000">
@@ -61,6 +62,11 @@ export default function ArchivesPage({
                             </Overlay>
                         </div>}>
                             <StatisticsLatestArchived />
+
+                            <div style={{ padding: 8, paddingTop: 16}}>
+                                <div style={{textDecoration: "underline"}}>Go ahead and search the archives to find what your looking for!</div>
+                                <SearchForm />
+                            </div>
                         </Suspense>
                     </div>
                 </div>
@@ -71,11 +77,22 @@ export default function ArchivesPage({
                 <div className={`${winStyles.title}`}>.WARC Backup Statistics</div>
                 <div className={fontToshibaTxL2.className}>
                     <div style={{ display: "flex", flexDirection: "column", height: "90%" }}>
-                       
+
                         <div className={fontToshibaTxL1.className} style={{ textAlign: 'center', width: '87.5%', margin: "8px auto" }}>Simple debug statistics on how much content I have backed up / free space.</div>
 
                         <StatisticsLatestCount />
                     </div>
+                </div>
+            </div>
+
+            <div className={`${winStyles.window}`}>
+                <div className={`${winStyles.title}`}>.WARC Offline Viewer</div>
+                <div className={fontToshibaTxL2.className}>
+                    <Link href="/warcs/offline" style={{ display: "flex", flexDirection: "column", height: "90%" }}>
+                        <span style={{ padding: "2%", textAlign: 'center', paddingBottom: "5%" }}>
+                            Click here to use the .WARC offline viewer! Upload your files to the browser to view the webpages you want.
+                        </span>
+                    </Link>
                 </div>
             </div>
 

@@ -32,20 +32,22 @@
 .sections {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    flex-wrap: wrap; /* Allows items to wrap to the next line */
+    justify-content: center; /* Center items in the row */
     width: 100%;
-    gap: 5%;
+    gap: 5%; /* Space between items */
     padding-left: 10%;
     padding-right: 10%;
-    margin: auto auto;
+    margin: auto; /* Center the section */
 }
 
 .sections > * {
-    flex: 1 1 00px; /* Grow, shrink, and base width of 400px */
-    max-width: 700px; /* Max width of 600px */
-    min-width: 00px; /* Minimum width of 400px */
+    flex: 1 1 calc(50% - 5%); /* Two items per row with gap adjustment */
+    max-width: calc(50% - 5%); /* Ensure items don't exceed available width */
     box-sizing: border-box; /* Include padding in width calculations */
+    margin-bottom: 2vh; /* Space below each item */
 }
+
 
 @media all and (-webkit-min-device-pixel-ratio:0) and (min-resolution: .001dpcm) {
     .noise {
