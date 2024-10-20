@@ -1,34 +1,47 @@
-import { Metadata } from "next";
-import { hashDJB2, hashSHA3 } from "@/libs/algorithm";
+import { Metadata } from 'next';
+import { Inter } from 'next/font/google'
+
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'M4cgyvers Offline .WARC viewer ',
-  description: 'THiss is an offline .warc viewer I made in NextJs. Its completly client sided so you dont upload anything to me improving in speed, privacy, and security!',
+    title: 'M4cgyver\'s Offline WARC Viewer',
+    description: 'A powerful, client-side WARC (Web ARChive) viewer built with Next.js. Browse and analyze web archives securely and privately without server uploads. Perfect for researchers, archivists, and web enthusiasts.',
+    
+    creator: 'M4cgyver',
+    publisher: 'M4cgyver',
+    
+    referrer: 'origin-when-cross-origin',
+    
+    keywords: ['WARC', 'WARC Viewer', '.warc viewer', 'application', 'Web Archive', 'Offline Viewer', 'client side'],
+    
+    authors: [{ name: 'M4cgyver' }],
+    
+    viewport: 'width=device-width, initial-scale=1',
+    
+    openGraph: {
+      title: 'M4cgyver\'s Offline WARC Viewer',
+      description: 'Explore web archives securely with this powerful, client-side WARC viewer. No uploads, enhanced privacy, and lightning-fast performance.',
+      url: 'https://archives.m4cgyver.com/warcs/offline',
+      siteName: 'M4cgyver\'s Web Archive Tools',
+      locale: 'en-US',
+      type: 'website', 
+    },
+    
+    twitter: {
+      card: 'summary_large_image',
+      title: 'M4cgyver\'s Offline WARC Viewer',
+      description: 'Securely browse web archives with this powerful, client-side WARC viewer. No uploads, enhanced privacy, fast performance.',
+      creator: '@M4cgyver', 
+    },
+  };
+  
 
-  creator: 'M4cgyver',
-  publisher: 'M4cgyver',
-
-  referrer: 'origin-when-cross-origin',
-
-  openGraph: {
-    title: 'M4cgyvers Offline .WARC viewer ',
-    description: 'THiss is an offline .warc viewer I made in NextJs. Its completly client sided so you dont upload anything to me improving in speed, privacy, and security!',
-    url: 'https://archives.m4cgyver.com/warcs/offline',
-    locale: 'en-US',
-    type: 'website',
-
-  }
-};
-
-const path = "/archives/warcs/offline";
-const documentId = hashDJB2(hashSHA3(path));
-
-export default async function ArchivesOfflineLayout({
-  children,
+export default function WARCOfflineViewerLayout({
+    children,
 }: {
-  children: React.ReactNode
+    children: React.ReactNode
 }) {
-  return <>
-    {children}
-  </>
+    return (<>
+        {children}
+    </>)
 }

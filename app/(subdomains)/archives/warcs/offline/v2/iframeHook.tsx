@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useRef, useCallback } from 'react'
-import { getParsedRecord } from "./cactions"
-import { useWarcOfflineViewer } from "./context"
-import { WarcRecord } from './types'
+import { useRef, useCallback, useEffect } from "react";
+import { useWarcOfflineViewer } from "../(index)/context";
+import { getParsedRecord } from "./cactions";
+import { WarcRecord } from "./types";
 
-export default function IFrameOfflineHook() {
+export default function WarcRecordIframeHook() {
     const { records, iframeRef, setIframeState } = useWarcOfflineViewer()
     const lastListenerRef = useRef<((event: MessageEvent) => void) | null>(null)
 
@@ -57,5 +57,5 @@ export default function IFrameOfflineHook() {
         }
     }, [records, displayRecord]) // Include dependencies in the useEffect
 
-    return null
+    return <></>
 }

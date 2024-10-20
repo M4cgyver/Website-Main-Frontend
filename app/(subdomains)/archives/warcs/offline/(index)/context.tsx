@@ -1,57 +1,77 @@
 'use client'
 
-import React, { createContext, useContext, useState, ReactNode } from 'react'
-import { GlobalContextType, WarcFile, WarcRecord, WarcTreeNode } from './types'
-import { addRecordToTree } from './cactions'
+import React, { createContext, useContext, useRef, useCallback, MutableRefObject, Dispatch, SetStateAction } from 'react'
+import { WarcFile, WarcTreeNode, IFrameState, WarcOfflineViewerContextType } from './types'
+import { WarcRecord } from './types'
 
-  
-const GlobalContext = createContext<GlobalContextType | undefined>(undefined)
-  
-export function GlobalProvider({ children }: { children: ReactNode }) {
-  const [warcRecords, setWarcRecords] = useState<WarcRecord[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [isLoadingRecord, setIsLoadingRecord] = useState(false)
-  const [files, setFiles] = useState<WarcFile[]>([])
-  const [iframeSrc, setIframeSrc] = useState<string | null>(null)
-  const [warcTree, setWarcTree] = useState<WarcTreeNode[]>([])
+const WarcOfflineViewerContext = createContext<WarcOfflineViewerContextType | undefined>(undefined)
 
-  const addRecordToTreeWrapper = (record: WarcRecord) => {
-    setWarcTree(prevTree => {
-      // Ensure prevTree is an array; fallback to empty array if null or undefined
-      const newTree = addRecordToTree(prevTree ?? [], record) ?? [];
-      //console.log("Total TREE", newTree);
-      return newTree;
-    });
-  };
-  
+export const WarcOfflineViewerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const records = useRef<WarcRecord[]>([])
+  const warcFilesRef = useRef<WarcFile[]>([])
+  const setRecordCountRef = useRef<Dispatch<SetStateAction<number>> | null>(null)
+  const setIframeStateRef = useRef<Dispatch<SetStateAction<IFrameState>> | null>(null)
+  const tree = useRef<WarcTreeNode>({
+    key: "",
+    child: [],
+    records: [],
+    opened: true,
+    updateList: null,
+    parrent: null,
+  })
+
+  const setRecords = useCallback((callback: (oldRecords: WarcRecord[]) => WarcRecord[]) => {
+    records.current = callback(records.current)
+    return records.current
+  }, [])
+
+  const setWarcFilesRef = useCallback((callback: (oldWarcFiles: WarcFile[]) => WarcFile[]) => {
+    warcFilesRef.current = callback(warcFilesRef.current)
+  }, [])
+
+  const setRecordCount: Dispatch<SetStateAction<number>> = useCallback((value) => {
+    if (setRecordCountRef.current) {
+      setRecordCountRef.current(value)
+    }
+  }, [])
+
+  const setRecordCountDispatch = useCallback((dispatch: Dispatch<SetStateAction<number>>) => {
+    setRecordCountRef.current = dispatch
+  }, [])
+
+  const setIframeState: Dispatch<SetStateAction<IFrameState>> = useCallback((value) => {
+    if (setIframeStateRef.current) {
+      setIframeStateRef.current(value)
+    }
+  }, [])
+
+  const setIframeStateDispatch = useCallback((dispatch: Dispatch<SetStateAction<IFrameState>>) => {
+    setIframeStateRef.current = dispatch
+  }, [])
 
   return (
-    <GlobalContext.Provider 
-      value={{ 
-        warcRecords, 
-        setWarcRecords, 
-        isLoading, 
-        setIsLoading,
-        isLoadingRecord,
-        setIsLoadingRecord, 
-        files, 
-        setFiles,
-        iframeSrc,
-        setIframeSrc,
-        warcTree,
-        setWarcTree,
-        addRecordToTree: addRecordToTreeWrapper
-      }}
-    >
+    <WarcOfflineViewerContext.Provider value={{
+      iframeRef,
+      records,
+      setRecords,
+      setRecordCount,
+      setRecordCountDispatch,
+      warcFilesRef,
+      setWarcFilesRef,
+      tree,
+      setIframeState,
+      setIframeStateDispatch
+    }}>
       {children}
-    </GlobalContext.Provider>
+    </WarcOfflineViewerContext.Provider>
   )
 }
 
-export function useGlobalContext() {
-  const context = useContext(GlobalContext)
+export const useWarcOfflineViewer = () => {
+  const context = useContext(WarcOfflineViewerContext)
   if (context === undefined) {
-    throw new Error('useGlobalContext must be used within a GlobalProvider')
+    throw new Error('useWarcOfflineViewer must be used within a WarcOfflineViewerProvider')
   }
   return context
 }

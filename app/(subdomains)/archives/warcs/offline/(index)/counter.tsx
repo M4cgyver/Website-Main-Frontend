@@ -1,18 +1,20 @@
 'use client'
 
-import React from 'react'
-import { useGlobalContext } from './context'
+import { useState, useEffect } from "react";
+import { useWarcOfflineViewer } from "./context";
 
-export default function RecordCounter() {
-  const { warcRecords, isLoading } = useGlobalContext()
+const RecordsCounter: React.FC = () => {
+    const { setRecordCountDispatch } = useWarcOfflineViewer();
+    const [count, setCount] = useState(0);
 
-  return (
-    <div>
-      {isLoading ? (
-        <span>Updating records... {warcRecords.length}</span>
-      ) : (
-        <span>Total Records:{warcRecords.length}</span>
-      )}
-    </div>
-  )
+    useEffect(()=>{
+        if(setRecordCountDispatch)
+            setRecordCountDispatch(setCount)
+    }, [setRecordCountDispatch]);
+
+    return (
+        <span>Total Records {count} </span>
+    )
 }
+
+export default RecordsCounter

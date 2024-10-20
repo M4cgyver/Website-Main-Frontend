@@ -1,185 +1,168 @@
-'use client';
+'use client'
 
-import React, { useRef, useCallback } from 'react';
-import { useGlobalContext } from './context';
-import { WarcRecord, WarcFile, WarcTreeNode } from './types';
-import { formatFileSize, parseFile } from './cactions';
+import React, { useState, useCallback } from 'react'
+import { useWarcOfflineViewer } from './context'
+import ListFiles from './listFiles'
+import { WarcFile, WarcRecord, WarcTreeNode } from './types'
+import { addRecordToTree, mWarcParseResponseContentStream, parseFiles, streamFromFile } from './cactions'
+import { mWarcParseResponseContent } from '@/libs/mwarc'
 
-export default function WarcUploadForm() {
-    const { files, setFiles, isLoading, setIsLoading, warcRecords, setWarcRecords, setWarcTree, addRecordToTree } = useGlobalContext();
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const [error, setError] = React.useState<string | null>(null);
+const UploadForm: React.FC = () => {
+  const { warcFilesRef, setWarcFilesRef, setRecords, records, setRecordCount, tree } = useWarcOfflineViewer()
+  const [localWarcFiles, setLocalWarcFiles] = useState<WarcFile[]>(warcFilesRef.current)
 
-    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setError(null);
-        if (event.target.files) {
-            const newFiles = Array.from(event.target.files);
-            const warcFiles = newFiles.filter(file => file.name.endsWith('.warc'));
-
-            if (warcFiles.length !== newFiles.length) {
-                setError('Some files were not .warc files and were ignored.');
-            }
-
-            // Create WarcFile objects with default status and progress
-            const newWarcFiles: WarcFile[] = warcFiles.map(file => ({
-                file,
-                status: 'idle',
-                progress: 0
-            }));
-
-            setFiles(prevFiles => [...prevFiles, ...newWarcFiles]);
-        }
-    };
-
-    const onRecordParsed = useCallback(
-        (newRecord: WarcRecord) => {
-            addRecordToTree(newRecord);
-            setWarcRecords(prevRecords => [...prevRecords, newRecord]);
+  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (files) {
+      const newWarcFiles: WarcFile[] = Array.from(files).map(file => ({
+        file,
+        status: 'idle',
+        progress: 0,
+        update: (status: 'idle' | 'processing' | 'complete', progress: number) => {
+          // Implement the update logic here
+          console.log(`Updating ${file.name}: status=${status}, progress=${progress}`);
+          // You might want to trigger a re-render or update state here
         },
-        [setWarcRecords]
-    );
+      }))
 
-    const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault();
-        setIsLoading(true);
+      setLocalWarcFiles(prevFiles => [...prevFiles, ...newWarcFiles])
+      setWarcFilesRef(prevFiles => [...prevFiles, ...newWarcFiles])
+    }
+  }, [setWarcFilesRef])
 
-        /*
-        parseFiles(files.map(file => file.file), onRecordParsed)
-            .then(() => {
-                setIsLoading(false);
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
-        */
+  const handleSubmit = useCallback((event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
 
-        files.forEach(wfile => wfile.status = 'processing');
+    // Here you would typically start processing the files
+    console.log('Files to process:', localWarcFiles);
 
-        const promises = files.map(wfile =>
-            parseFile(wfile.file, onRecordParsed, (p: number) => {
-                wfile.progress = p
-                setFiles(prev => prev);
-                //console.log(p)
-            })
-                .then(() => {
-                    wfile.status = 'complete'
-                })
-        );
+    parseFiles(localWarcFiles.filter(file => file.status === 'idle'), (newRecord) => {
+      const newRecordWithContent: any = {
+        ...newRecord,
 
-        Promise.allSettled(promises).then(() => {
-            setIsLoading(false);
-        })
-    };
+        content: async () => {
+          const slice = await newRecord.file.slice(Number(newRecord.offset), Number(newRecord.offset + newRecord.size)).arrayBuffer().then(slice => Buffer.from(slice));
+          if (newRecord.http && newRecord.http['transfer-encoding'] === "chunked") {
+            console.log("chunked")
+            return mWarcParseResponseContent(slice, "chunked");
+          } else {
+            return slice;
+          }
+        },
 
-    //console.log("FINAL TREE", warcTree);
+        stream: mWarcParseResponseContentStream(newRecord.file, newRecord.http?.['transfer-encoding'] ?? undefined, { start: newRecord.offset, size: newRecord.size })
+      };
 
-    const removeFileFromTree = (nodes: WarcTreeNode[], fileToRemove: WarcFile): WarcTreeNode[] => {
-        const result: WarcTreeNode[] = [];
+      //console.log("new record", newRecordWithContent)
 
-        nodes.forEach(node => {
-            // Recursively filter child nodes
-            const filteredChildren = removeFileFromTree(node.child, fileToRemove);
+      const newRecords = setRecords(prevRecords => [...prevRecords, newRecordWithContent]);
 
-            // Only include the current node if it should not be removed
-            if (node.record?.file !== fileToRemove.file) {
-                result.push({
-                    ...node,
-                    child: filteredChildren,
-                });
-            }
-        });
+      setRecordCount(newRecords.length);
 
-        return result;
-    };
+      const warcFile = localWarcFiles.find(file => file.file.name === newRecord.file.name);
 
+      //console.log(localWarcFiles, warcFile);
+      if (warcFile?.update)
+        warcFile.update("processing", Number(newRecord.offset) / newRecord.file.size * 100)
 
-    const removeFile = (fileToRemove: WarcFile) => {
-        setFiles(prevFiles => prevFiles.filter(file => file.file !== fileToRemove.file));
-        setWarcRecords(prevRecords => prevRecords.filter(record => record.file !== fileToRemove.file));
-        setWarcTree(prevTree => removeFileFromTree(prevTree, fileToRemove));
+      if (tree.current) {
+        let node = addRecordToTree(tree.current, newRecordWithContent);
+        let updateListFunc = null;
 
-    };
+        while (node) {
+          if (node.updateList) {
+            updateListFunc = node.updateList;
+            break;
+          }
+          node = node.parrent;
+        }
 
-    return (
+        if (typeof updateListFunc === 'function') {
+          updateListFunc();
+        }
+      }
+    });
+
+  }, [localWarcFiles])
+
+  const removeFile = useCallback((fileToRemove: WarcFile) => {
+    /*
+    const checkNode = (node: WarcTreeNode) => {
+      // Filter out records that match fileToRemove
+      node.records = node.records.filter(r => r.file !== fileToRemove.file);
+
+      // Iterate through children and check recursively
+      node.child = node.child.filter(c => {
+        const { needToRemove } = checkNode(c);
+        return !needToRemove; // Keep children that do not need to be removed
+      });
+
+      if(node.updateList)
+      node.updateList();
+
+      // Determine if this node needs to be removed
+      return { needToRemove: node.records.length === 0 && node.child.length === 0 };
+    };*/
+
+    setLocalWarcFiles(prevFiles => prevFiles.filter(file => file !== fileToRemove))
+    setWarcFilesRef(prevFiles => prevFiles.filter(file => file !== fileToRemove))
+    
+    //setRecords(records => records.filter(r => r.file !== fileToRemove.file));
+
+    /*
+    if (tree.current) {
+      tree.current.child.length = 0;
+
+      if (tree.current.updateList)
+        tree.current.updateList();
+
+      records.current?.forEach(r => {
+        if (tree.current !== null)
+          addRecordToTree(tree.current, r)
+      });
+
+    }
+    */
+  }, [setWarcFilesRef])
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full h-full flex flex-col">
+      <div className="flex-grow space-y-4 p-3">
         <div>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div>
-                    <label htmlFor="warc-files" style={{ display: 'block', marginBottom: '0.5rem' }}>Upload WARC Files</label>
-                    <input
-                        id="warc-files"
-                        type="file"
-                        multiple
-                        accept=".warc"
-                        onChange={handleFileUpload}
-                        disabled={isLoading}
-                        ref={fileInputRef}
-                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
-                    />
-                </div>
-                {error && (
-                    <div style={{ backgroundColor: '#fee2e2', color: '#991b1b', padding: '1rem', borderRadius: '4px' }}>
-                        <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Error</p>
-                        <p>{error}</p>
-                    </div>
-                )}
-                <button
-                    type="submit"
-                    disabled={isLoading || files.length === 0}
-                    style={{
-                        backgroundColor: isLoading || files.length === 0 ? '#9ca3af' : '#3b82f6',
-                        color: 'white',
-                        padding: '0.5rem 1rem',
-                        borderRadius: '4px',
-                        border: 'none',
-                        cursor: isLoading || files.length === 0 ? 'not-allowed' : 'pointer'
-                    }}
-                >
-                    {isLoading ? 'Processing...' : 'Upload and Process'}
-                </button>
-            </form>
-
-            <ul className="mt-4 pb-1">
-                {files.map((warcFile, index) => (
-                    <li
-                        key={index}
-                        className="flex gap-2 m-2 p-1 items-center justify-between py-2 rounded-s"
-                        style={{
-                            backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.1) ${warcFile.status === 'complete' ? 100 : warcFile.progress * 100
-                                }%, transparent ${warcFile.status === 'complete' ? 100 : warcFile.progress * 100
-                                }%)`,
-                            backgroundSize: '100% 100%',
-                            backgroundRepeat: 'no-repeat',
-                            transition: 'background-image 0.5s ease-in-out',
-                        }}
-                    >
-                        <button
-                            onClick={() => removeFile(warcFile)}
-                            className={`px-2 py-1 text-sm text-white rounded focus:outline-none focus:ring-2 focus:ring-opacity-50 ${warcFile.status === 'processing'
-                                    ? 'bg-red-300 cursor-not-allowed'
-                                    : 'bg-red-500 hover:bg-red-600 focus:ring-red-500'
-                                }`}
-                            style={{
-                                width: 75,
-                            }}
-                            disabled={warcFile.status === 'processing'}
-                        >
-                            Remove
-                        </button>
-
-                        <span className="grow"> {warcFile.file.name}</span>
-
-                        <span style={{ width: 90, textAlign: 'center' }}>
-                            {formatFileSize(warcFile.file.size)}
-                        </span>
-
-                        <span style={{ width: 90, textAlign: 'right' }}>
-                            {warcFile.status === 'complete'
-                                ? '100%'
-                                : (warcFile.progress * 100).toFixed(2) + '%'}
-                        </span>
-                    </li>
-                ))}
-            </ul>
+          <label htmlFor="warc-files" className="block text-sm font-medium text-gray-700 mb-2">
+            Upload WARC Files
+          </label>
+          <div className="relative">
+            <input
+              type="file"
+              id="warc-files"
+              multiple
+              accept=".warc,.warc.gz"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <label
+              htmlFor="warc-files"
+              className="flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
+            >
+              <span className="mr-2">📁</span> Choose files
+            </label>
+          </div>
         </div>
-    );
+
+        <ListFiles files={localWarcFiles} removeFile={removeFile} />
+      </div>
+
+      <div className="mt-auto p-3">
+        <button
+          type="submit"
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
+        >
+          Upload and Process Files
+        </button>
+      </div>
+    </form>
+  )
 }
+
+export default UploadForm

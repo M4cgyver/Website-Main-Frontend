@@ -1,43 +1,40 @@
-"use client"
+import { WarcOfflineViewerProvider } from "./context";
+import RecordsCounter from "./counter";
+import UploadForm from "./form";
+import IFrameOffline from "./iframe";
 
-import { GlobalProvider } from "./context"
-import RecordCounter from "./counter"
-import WarcUploadForm from "./form"
-
-import styles from "./page.module.css";
 import winStyles from "@/libs/styles/windows.archives.module.css"
-import { Metadata } from "next";
-import { WarcRecordIframe } from "./iframe";
 import WarcRecordsList from "./listRecords";
-import WarcRecordIframeHook from "./iframeHook";
+import IFrameOfflineHook from "./iframeHook";
 
-export default async function ArchivesOfflinePage({ }) {
-    return <GlobalProvider>
-        <main>
+export default function WARCOfflineViewerPage() {
+    return (
+        <WarcOfflineViewerProvider>
+            <div style={{ width: "85%", margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
 
-            <div className={`${winStyles.window} ${styles.window}`}>
-                <div className={winStyles.title}>
-                    Local .WARC Viewer
-                    <span style={{ float: 'right' }}><RecordCounter /></span>
+                <div className={`${winStyles.window}`}>
+                    <div className={`${winStyles.title}`}>.WARC Window
+                        <span style={{ float: "right" }}>
+                            <RecordsCounter />
+                        </span>
+                    </div>
+
+                    <IFrameOffline />
+                    <IFrameOfflineHook />
                 </div>
-                <div className={styles.flexthis}>
-                    <span style={{ backgroundColor: "white", width: "100%", height: "100%" }}>
-                        <WarcRecordIframeHook />
-                        <WarcRecordIframe />
-                    </span>
+
+                <div className={`${winStyles.window}`}>
+                    <div className={`${winStyles.title}`}>File Upload</div>
+                    <UploadForm />
+                </div>
+
+
+                <div className={`${winStyles.window}`}>
+                    <div className={`${winStyles.title}`}>Record Listing</div>
+                    <WarcRecordsList /> 
                 </div>
             </div>
 
-            <div className={`${winStyles.window} ${styles.window} ${styles.upload}`}>
-                <div className={winStyles.title}>Upload</div>
-                <WarcUploadForm />
-            </div>
-
-            <div className={`${winStyles.window} ${styles.window} ${styles.upload}`}>
-                <div className={winStyles.title}>Records</div>
-                <WarcRecordsList />
-            </div>
-
-        </main>
-    </GlobalProvider>
+        </WarcOfflineViewerProvider>
+    )
 }
